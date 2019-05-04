@@ -1,0 +1,380 @@
+<head>
+<meta charset='utf-8' />
+<title>Viz</title>
+<meta name='viewport' content='initial-scale=1,maximum-scale=1,user-scalable=no' />
+<script src="https://code.jquery.com/jquery-3.2.1.min.js"></script>
+<script src="https://code.jquery.com/ui/1.12.1/jquery-ui.min.js"></script>
+<link href='https://code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css' rel='stylesheet' />
+<script src='https://api.mapbox.com/mapbox-gl-js/v0.42.0/mapbox-gl.js'></script>
+<link href='https://api.mapbox.com/mapbox-gl-js/v0.42.0/mapbox-gl.css' rel='stylesheet' />
+<script src='data.js'></script>
+<style>
+    body { margin:0; padding:0; }
+    #map { position:absolute; top:0%; left:0%; width:100%; height:100%;}
+    #infoshow {position:absolute; top:12%; left:1%; font-size: 20px; font-weight: bold; color:aliceblue; opacity: 0.6; border: none; background-color: transparent; outline:none; cursor:pointer;}
+    #infohide {position:absolute; top:12%; left:23%; font-size: 20px; font-weight: bold; color:aliceblue; opacity: 0.6; border: none; background-color: transparent; outline:none; cursor:pointer;}
+    #toolshow {position:absolute; top:57%; left:1%; font-size: 20px; font-weight: bold; color:aliceblue; opacity: 0.6; border: none; background-color: transparent; outline:none; cursor:pointer;}
+    #toolhide {position:absolute; top:57%; left:44%; font-size: 20px; font-weight: bold; color:aliceblue; opacity: 0.6; border: none; background-color: transparent; outline:none; cursor:pointer;}
+    #info {position:absolute; top:7%; left:2%; width:400px; height: 125px; background:url(bg.jpg); font-family: monospace; border-radius: 3px;}
+    #tools {position:absolute; bottom:15%; left:2%; width:800px; height: 600px; background:url(bg.jpg); font-family: monospace; border-radius: 3px;}
+    #chart {position:absolute; bottom:3%; left:3%; width:750px; height: 450px;}
+    #event {position:absolute; top:6%; left:61%; width:20px; height: 20px; border-radius: 13px; border: 2px solid #666; background:url(bg.jpg); font-size: 18px; font-weight: bold; font-family: monospace; text-align: center; color: #666}
+    #eventInfo {position:absolute; top:6%; left:61%; width:305px; height: 170px; border-radius: 13px; border: 2px solid #666; background:url(bg.jpg);}
+    #eventpicker {position:absolute; top:4.5%; left:16%; width:350px; height: 40px; background:url(bg.jpg); font-size: 22px; text-align: center; border: none;}
+    #datepicker {position:absolute; top:13.5%; left:16%; width:180px; height: 40px; background:url(bg.jpg); font-size: 30px; text-align: center; border: none;}
+    #areapicker {position:absolute; top:13.5%; left:53%; width:100px; height: 40px; background:url(bg.jpg); font-size: 30px; text-align: center; border: none;}
+    select {text-align: center; text-align-last: center;}
+    option {text-align: center;}
+    #loading {position:absolute; top:40%; left:50%;}
+    #drawing {position:absolute; top:41%; left:57%; font-size: 80px; font-family: monospace; color: #eee; text-shadow: 2px 2px 0 #222, -2px -2px 0 #222;}
+    #flowchart {position:absolute; width:500px; height: 300px; background-color: #fff; border-radius: 3px;}
+    #showChart {position:absolute; top:2%; left:75%;font-size: 24px; background: none; border: none; opacity: 0.6;}
+    #hideChart {position:absolute; top:2%; left:75%;font-size: 24px; background: none; border: none; opacity: 0.6;}
+    #drawall {position:absolute; top:8%; left:75%;font-size: 24px; background: none; border: none; opacity: 0.6;}
+    #clearall {position:absolute; top:14%; left:75%;font-size: 24px; background: none; border: none; opacity: 0.6;}
+</style>
+</head>
+
+<body>
+<div id='map'></div>
+<input id="infoshow" hidden onclick="showInfo();" onmouseover="this.style.opacity=0.9;" onmouseout="this.style.opacity=0.6;" type="button" value=">>">
+<input id="infohide" onclick="hideInfo();" onmouseover="this.style.opacity=0.9;" onmouseout="this.style.opacity=0.6;" type="button" value="<<">
+<div id="info">
+    <span style="position:absolute; top:8%; left:5%; font-size: 20px;">经纬度:</span>
+    <span id="latlon" style="position:absolute; top:11%; left:40%; font-size: 20px;"></span>
+    <span style="position:absolute; top:38%; left:5%; font-size: 20px;">网格坐标:</span>
+    <span id="grid" style="position:absolute; top:40%; left:41%; font-size: 20px;"></span>
+    <span style="position:absolute; top:68%; left:5%; font-size: 20px;">分类名:</span>
+    <span id="sortname" style="position:absolute; top:71%; left:28%; font-size: 20px;"></span>
+    <span style="position:absolute; top:68%; left:50%; font-size: 20px;">分类序号:</span>
+    <span id="sortnumber" style="position:absolute; top:71%; left:75%; font-size: 20px;"></span>
+</div>
+<input id="toolshow" hidden onclick="showTool();" onmouseover="this.style.opacity=0.9;" onmouseout="this.style.opacity=0.6;" type="button" value=">>">
+<input id="toolhide" onclick="hideTool();" onmouseover="this.style.opacity=0.9;" onmouseout="this.style.opacity=0.6;" type="button" value="<<">
+<div id="tools">
+    <div id="chart"><img src="fmri/anomaly.png" width="750px" height="450px"></div>
+    <span style="position:absolute; top:4%; left:5%;font-size: 28px;">事件:</span>
+    <select id="eventpicker"></select>
+    <span style="position:absolute; top:13%; left:5%;font-size: 28px;">日期:</span>
+    <input type="text" id="datepicker" placeholder="点击选择" readonly="readonly">
+    <span style="position:absolute; top:13%; left:42%;font-size: 28px;">区域:</span>
+    <select id="areapicker"><option disabled selected></option></select>
+    <div id="flowChart" hidden></div>
+    <input id="showChart" onclick="showChart();" onmouseover="this.style.opacity=0.9;" onmouseout="this.style.opacity=0.6;" type="button" value="显示区域流量">
+    <input id="hideChart" hidden onclick="hideChart();" onmouseover="this.style.opacity=0.9;" onmouseout="this.style.opacity=0.6;" type="button" value="隐藏区域流量">    
+    <input id="drawall" onclick="drawall();" onmouseover="this.style.opacity=0.9;" onmouseout="this.style.opacity=0.6;" type="button" value="显示聚类结果">
+    <input id="clearall" onclick="clearall();" onmouseover="this.style.opacity=0.9;" onmouseout="this.style.opacity=0.6;" type="button" value="清除全部图像">
+    <div id="eventInfo" hidden>
+        <div id="eventName" style="font-size: 22px; font-weight: bold; font-family: monospace; text-align: center; color: #666">请选择事件</div>
+        <div id="eventDetail" style="position:absolute; top:20%; left:4%; width:285px; height: 180px; font-size: 18px; font-family: monospace; text-align: center; color: #666"></div>
+    </div>
+    <div id="eventList" hidden>
+        <div style="font-size: 22px; font-weight: bold; font-family: monospace; text-align: center; color: #666">2016年9月社会事件</div>
+        <ul id="listDetail" style="list-style-type:circle;position:absolute; top:4%; left:10%;font-size: 18px;"></ul>
+    </div>
+    <div id="event" onmouseover="$('#eventInfo').show('slow');" onmouseout="$('#eventInfo').hide('slow');" onclick="$('#eventInfo').hide('slow');$('#eventList').show('slow');">i</div>
+</div>
+
+<script>
+//Event List
+eventList = [];
+$("#eventpicker").append("<option disabled selected></option>");
+for(var i = 0; i < events.length; i ++){
+    if(eventList.indexOf(events[i].event) == -1){
+        eventList.push(events[i].event);
+        $("#eventpicker").append("<option value="+events[i].event+">"+events[i].event+"</option>");
+    }
+}
+//Preload images
+var images = []
+for(var i = 0; i < sort.length; i ++){
+    image = new Image();
+    image.src = "fmri/anomaly_GP"+(i+1)+".png";
+    images.push(image);
+    image = new Image();
+    image.src = "flow/area_TP"+i+".png";
+    images.push(image);
+}
+//Datapicker
+$("#datepicker").datepicker({
+    onSelect: function(date) {
+        var day = parseInt(date.slice(8));
+        dateEvent(day);
+    },
+    defaultDate: '2016-09-01',
+    minDate: '2016-09-01',
+    maxDate: '2016-09-30',
+    selectOtherMonths: false,
+    showAnmi: 'slideDown',
+    dateFormat: "yy-mm-dd",
+    beforeShowDay: function(date){
+        var day = date.getDate();
+        if(available.indexOf(day) == -1){
+            return [false];
+        } 
+        else{
+            return [true];
+        }
+    }
+});
+//Map
+mapboxgl.accessToken = 'pk.eyJ1IjoicGF1bGF1IiwiYSI6ImNqYWdwcWxraDFoMWsycXJ6MG4zMzUxanQifQ.uWUebRKJW1Io-HBY_3lRLw';
+var map = new mapboxgl.Map({
+    container: 'map',
+    style: 'mapbox://styles/mapbox/dark-v9',
+    center: [118.067693, 24.494379],
+    zoom: 12
+});
+map.addControl(new mapboxgl.FullscreenControl());
+
+var showflag = 0;
+map.on('mousemove', function (e){
+    //Infomations of mouse position
+    lat = e.lngLat.lat;
+    lng = e.lngLat.lng;
+    x = Math.floor((lng - L) / DLO);
+    y = Math.floor((T - lat) / DLA);
+    if( x < 0 || y < 0 || x > 67 || y > 76 || data[y][x] == 0){
+        s = 0;
+        k = 0;
+    }
+    else{
+        for(var k = 0; sort[k] != data[y][x]; k ++);
+        s = sort[k];
+    }
+    $('#latlon').text(lat.toFixed(4)+' , '+lng.toFixed(4));
+    $('#grid').text(x+'  ,  '+y);
+    $('#sortname').text(s);
+    $('#sortnumber').text(k);
+    //Chart of mouseover block
+    $(document).mousemove(function (p) {
+        if(showflag){
+            x = p.pageX-30;
+            y = p.pageY-230;
+            if(s != 0){
+                if(x < 1375)
+                    $('#flowChart').css("left", x+"px").css("top", y+"px");
+                else
+                    $('#flowChart').css("left", x-500+"px")
+                if(y < 445)
+                    $('#flowChart').css("top", y+"px");
+                else
+                    $('#flowChart').css("top", y-300+"px");
+                $('#flowChart').html('<img src="flow/area_TP'+k+'.png" width="500px" height="300px" style="border-radius: 3px;">');
+                $('#flowChart').show();
+            }
+            else{
+                $('#flowChart').hide();
+            }
+        }
+    });
+});
+
+map.on('load', function(){
+    drawall();
+})
+
+var shown = [];
+map.on('click', function(e){
+    lat = e.lngLat.lat;
+    lng = e.lngLat.lng;
+    x = Math.floor((lng - L) / DLO);
+    y = Math.floor((T - lat) / DLA);
+    if(!(x < 0 || y < 0 || x > 67 || y > 76)){
+        for(var k = 0; sort[k] != data[y][x]; k ++);
+        s = sort[k];
+        if(shown.indexOf(s) != -1){
+            $("#areapicker").val(data[y][x]);
+            areaEvent(data[y][x]);
+        }
+    }
+});
+
+function showInfo(){
+    $('#info').show('slow');
+    $('#infoshow').hide();
+    $('#infohide').show();
+}
+
+function hideInfo(){
+    $('#info').hide('slow');
+    $('#infoshow').show();
+    $('#infohide').hide();
+}
+
+function showTool(){
+    $('#tools').show('slow');
+    $('#toolshow').hide();
+    $('#toolhide').show();
+}
+
+function hideTool(){
+    $('#tools').hide('slow');
+    $('#toolshow').show();
+    $('#toolhide').hide();
+}
+
+function drawall(){
+    clearall();
+    for(var k = 0; k < polygons.length; k ++){
+        for(var pn = 0; pn < polygons[k].length; pn ++){
+            var id = 'sort'+k+'n'+pn;
+            var color = colors[k];
+            map.addSource(id, {
+                'type': 'geojson',
+                'data': {
+                    'type': 'Feature',
+                    'geometry': {
+                        'type': 'Polygon',
+                        'coordinates': [polygons[k][pn]]
+                    }
+                }
+            });
+            map.addLayer({
+                'id': id,
+                'type': 'fill',
+                'source': id,
+                'paint': {
+                    'fill-color': color,
+                    'fill-opacity': 0.5,
+                    'fill-outline-color': 'transparent'
+                }
+            });
+        }
+    }
+}
+
+function draw(area){
+    for(var k = 0; k < polygons.length; k ++){
+        if(area.indexOf(sort[k]) == -1) continue;
+        for(var pn = 0; pn < polygons[k].length; pn ++){
+            var id = 'sort'+k+'n'+pn;
+            var color = colors[k];
+            map.addSource(id, {
+                'type': 'geojson',
+                'data': {
+                    'type': 'Feature',
+                    'geometry': {
+                        'type': 'Polygon',
+                        'coordinates': [polygons[k][pn]]
+                    }
+                }
+            });
+            map.addLayer({
+                'id': id,
+                'type': 'fill',
+                'source': id,
+                'paint': {
+                    'fill-color': color,
+                    'fill-opacity': 0.5,
+                    'fill-outline-color': 'transparent'
+                }
+            });
+        }
+    }
+}
+
+function clearall(){
+    for(var i = 0; i < 68; i ++){
+        for(var j = 0; j < 77; j ++){
+            var id = 'block'+i+'n'+j;
+            try{
+                map.removeSource(id);
+                map.removeLayer(id);
+            }
+            catch(err){}
+        }
+    };
+    for(var k = 0; k < polygons.length; k ++){
+        for(var pn = 0; pn < polygons[k].length; pn ++){
+            var id = 'sort'+k+'n'+pn;
+            try{
+                map.removeSource(id);
+                map.removeLayer(id);
+            }
+            catch(err){}
+        }
+    };
+}
+
+function areaEvent(area){
+    clearall();
+    draw([area]);
+    for(var k = 0; sort[k] != area; k ++);
+    $('#chart').hide();
+    $('#chart').html('<img src="fmri/anomaly_GP'+(k+1)+'.png" width="750px" height="450px">');
+    $('#chart').show();
+}
+
+$('#areapicker').on('change', function(){
+    var area = parseInt(this.value);
+    areaEvent(area);
+    shown = []
+});
+
+function eventEvent(event){
+    clearall();
+    avaiDate = [];
+    for(var i = 0; i < events.length; i ++){
+        if(events[i].event == event){
+            $('#eventName').html(events[i].event);
+            $('#eventDetail').html(events[i].detail);
+            area = events[i].effect;
+            avaiDate.push(events[i].date);
+        }
+    }
+    draw(area);
+    $("#datepicker").datepicker('destroy');
+    $("#datepicker").datepicker({
+        onSelect: function(date) {
+            var day = parseInt(date.slice(8));
+            dateEvent(day);
+        },
+        defaultDate: '2016-09-01',
+        minDate: '2016-09-01',
+        maxDate: '2016-09-30',
+        selectOtherMonths: false,
+        showAnmi: 'slideDown',
+        dateFormat: "yy-mm-dd",
+        beforeShowDay: function(date){
+            var day = date.getDate();
+            if(avaiDate.indexOf(day) == -1){
+                return [false];
+            } 
+            else{
+                return [true];
+            }
+        }
+    });
+    if(avaiDate.length == 1){
+        $('#datepicker').datepicker('setDate', '2016-09-'+avaiDate[0]);
+    }
+    else{
+        $('#datepicker').datepicker("show");
+    }
+    $("#areapicker").empty();
+    $("#areapicker").append("<option disabled selected></option>");
+    shown = []
+    for(var i = 0; i < area.length; i ++){
+        shown.push(area[i]);
+        $("#areapicker").append("<option value="+area[i]+">"+area[i]+"</option>");
+    }
+}
+
+$('#eventpicker').on('change', function(){
+    eventEvent(this.value);
+});
+
+function showChart(){
+    $('#showChart').hide();
+    $('#hideChart').show();
+    showflag = 1;
+}
+
+function hideChart(){
+    $('#hideChart').hide();
+    $('#showChart').show();
+    showflag = 0;
+}
+</script>
+</body>
