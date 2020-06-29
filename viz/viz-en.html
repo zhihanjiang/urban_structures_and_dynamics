@@ -7,7 +7,7 @@
 <link href='https://code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css' rel='stylesheet' />
 <script src='https://api.mapbox.com/mapbox-gl-js/v0.42.0/mapbox-gl.js'></script>
 <link href='https://api.mapbox.com/mapbox-gl-js/v0.42.0/mapbox-gl.css' rel='stylesheet' />
-<script src='data-en.js'></script>
+<script src='../data/data-en.js'></script>
 <style>
     body { margin:0; padding:0; }
     #map { position:absolute; top:0%; left:0%; width:100%; height:100%;}
@@ -15,23 +15,23 @@
     #infohide {position:absolute; top:12%; left:23%; font-size: 20px; font-weight: bold; color:aliceblue; opacity: 0.6; border: none; background-color: transparent; outline:none; cursor:pointer;}
     #toolshow {position:absolute; top:57%; left:1%; font-size: 20px; font-weight: bold; color:aliceblue; opacity: 0.6; border: none; background-color: transparent; outline:none; cursor:pointer;}
     #toolhide {position:absolute; top:57%; left:44%; font-size: 20px; font-weight: bold; color:aliceblue; opacity: 0.6; border: none; background-color: transparent; outline:none; cursor:pointer;}
-    #info {position:absolute; top:7%; left:2%; width:400px; height: 125px; background:url(bg.jpg); font-family: monospace; border-radius: 3px;}
-    #tools {position:absolute; bottom:15%; left:2%; width:800px; height: 600px; background:url(bg.jpg); font-family: monospace; border-radius: 3px;}
-    #chart {position:absolute; bottom:3%; left:3%; width:750px; height: 450px;}
-    #event {position:absolute; top:6%; left:61%; width:20px; height: 20px; border-radius: 13px; border: 2px solid #666; background:url(bg.jpg); font-size: 18px; font-weight: bold; font-family: monospace; text-align: center; color: #666}
-    #eventInfo {position:absolute; top:6%; left:61%; width:305px; height: 170px; border-radius: 13px; border: 2px solid #666; background:url(bg.jpg);}
-    #eventpicker {position:absolute; top:4.5%; left:16%; width:350px; height: 40px; background:url(bg.jpg); font-size: 22px; text-align: center; border: none;}
-    #datepicker {position:absolute; top:13.5%; left:16%; width:180px; height: 40px; background:url(bg.jpg); font-size: 30px; text-align: center; border: none;}
-    #areapicker {position:absolute; top:13.5%; left:53%; width:100px; height: 40px; background:url(bg.jpg); font-size: 30px; text-align: center; border: none;}
+    #info {position:absolute; top:10%; left:2%; width:400px; height: 100px; background:url(bg.jpg); font-family: monospace; border-radius: 3px;}
+    #tools {position:absolute; top:30%; left:2%; width:533px; height: 400px; background:url(bg.jpg); font-family: monospace; border-radius: 3px;}
+    #chart {position:absolute; top:20%; left:3%; width:500px; height: 250px;}
+    #event {position:absolute; top:4%; left:60%; width:15px; height: 15px; border-radius: 10px; border: 2px solid #666; background:url(bg.jpg); font-size: 15px; font-weight: bold; font-family: monospace; text-align: center; color: #666}
+    #eventInfo {position:absolute; top:4%; left:61%; width:305px; height: 170px; border-radius: 10px; border: 2px solid #666; background:url(bg.jpg);}
+    #eventpicker {position:absolute; top:4%; left:16%; width:220px; height: 20px; background:url(bg.jpg); font-size: 15px; text-align: center; border: none;}
+    #datepicker {position:absolute; top:12.5%; left:12%; width:100px; height: 20px; background:url(bg.jpg); font-size: 15px; text-align: center; border: none;}
+    #areapicker {position:absolute; top:13%; left:45%; width:100px; height: 20px; background:url(bg.jpg); font-size: 15px; text-align: center; border: none;}
     select {text-align: center; text-align-last: center;}
     option {text-align: center;}
     #loading {position:absolute; top:40%; left:50%;}
     #drawing {position:absolute; top:41%; left:57%; font-size: 80px; font-family: monospace; color: #eee; text-shadow: 2px 2px 0 #222, -2px -2px 0 #222;}
     #flowchart {position:absolute; width:500px; height: 300px; background-color: #fff; border-radius: 3px;}
-    #showChart {position:absolute; top:2%; left:75%;font-size: 24px; background: none; border: none; opacity: 0.6;}
-    #hideChart {position:absolute; top:2%; left:75%;font-size: 24px; background: none; border: none; opacity: 0.6;}
-    #drawall {position:absolute; top:8%; left:75%;font-size: 24px; background: none; border: none; opacity: 0.6;}
-    #clearall {position:absolute; top:14%; left:75%;font-size: 24px; background: none; border: none; opacity: 0.6;}
+    #showChart {position:absolute; top:2%; left:67%;font-size: 15px; background: none; border: none; opacity: 0.6;}
+    #hideChart {position:absolute; top:2%; left:67%;font-size: 15px; background: none; border: none; opacity: 0.6;}
+    #drawall {position:absolute; top:7%; left:67%;font-size: 15px; background: none; border: none; opacity: 0.6;}
+    #clearall {position:absolute; top:12%; left:67%;font-size: 15px; background: none; border: none; opacity: 0.6;}
 </style>
 </head>
 
@@ -40,36 +40,36 @@
 <input id="infoshow" hidden onclick="showInfo();" onmouseover="this.style.opacity=0.9;" onmouseout="this.style.opacity=0.6;" type="button" value=">>">
 <input id="infohide" onclick="hideInfo();" onmouseover="this.style.opacity=0.9;" onmouseout="this.style.opacity=0.6;" type="button" value="<<">
 <div id="info">
-    <span style="position:absolute; top:8%; left:5%; font-size: 20px;">经纬度:</span>
-    <span id="latlon" style="position:absolute; top:11%; left:40%; font-size: 20px;"></span>
-    <span style="position:absolute; top:38%; left:5%; font-size: 20px;">网格坐标:</span>
-    <span id="grid" style="position:absolute; top:40%; left:41%; font-size: 20px;"></span>
-    <span style="position:absolute; top:68%; left:5%; font-size: 20px;">分类名:</span>
-    <span id="sortname" style="position:absolute; top:71%; left:28%; font-size: 20px;"></span>
-    <span style="position:absolute; top:68%; left:50%; font-size: 20px;">分类序号:</span>
-    <span id="sortnumber" style="position:absolute; top:71%; left:75%; font-size: 20px;"></span>
+    <span style="position:absolute; top:10%; left:5%; font-size: 15px;">Latitude/Longitude:</span>
+    <span id="latlon" style="position:absolute; top:10%; left:50%; font-size: 15px;"></span>
+    <span style="position:absolute; top:40%; left:5%; font-size: 15px;">Grid Coordinate:</span>
+    <span id="grid" style="position:absolute; top:40%; left:45%; font-size: 15px;"></span>
+    <span style="position:absolute; top:70%; left:5%; font-size: 15px;">Class Name:</span>
+    <span id="sortname" style="position:absolute; top:70%; left:35%; font-size: 15px;"></span>
+    <span style="position:absolute; top:70%; left:50%; font-size: 15px;">Class No.:</span>
+    <span id="sortnumber" style="position:absolute; top:70%; left:75%; font-size: 15px;"></span>
 </div>
 <input id="toolshow" hidden onclick="showTool();" onmouseover="this.style.opacity=0.9;" onmouseout="this.style.opacity=0.6;" type="button" value=">>">
 <input id="toolhide" onclick="hideTool();" onmouseover="this.style.opacity=0.9;" onmouseout="this.style.opacity=0.6;" type="button" value="<<">
 <div id="tools">
-    <div id="chart"><img src="fmri/anomaly.png" width="750px" height="450px"></div>
-    <span style="position:absolute; top:4%; left:5%;font-size: 28px;">事件:</span>
+    <div id="chart"><img src="fmri/anomaly.png" width="500px" height="300px"></div>
+    <span style="position:absolute; top:4%; left:4%;font-size: 15px;">Event:</span>
     <select id="eventpicker"></select>
-    <span style="position:absolute; top:13%; left:5%;font-size: 28px;">日期:</span>
-    <input type="text" id="datepicker" placeholder="点击选择" readonly="readonly">
-    <span style="position:absolute; top:13%; left:42%;font-size: 28px;">区域:</span>
+    <span style="position:absolute; top:13%; left:4%;font-size: 15px;">Date:</span>
+    <input type="text" id="datepicker" placeholder="click" readonly="readonly">
+    <span style="position:absolute; top:13%; left:35%;font-size: 15px;">Area:</span>
     <select id="areapicker"><option disabled selected></option></select>
     <div id="flowChart" hidden></div>
-    <input id="showChart" onclick="showChart();" onmouseover="this.style.opacity=0.9;" onmouseout="this.style.opacity=0.6;" type="button" value="显示区域流量">
-    <input id="hideChart" hidden onclick="hideChart();" onmouseover="this.style.opacity=0.9;" onmouseout="this.style.opacity=0.6;" type="button" value="隐藏区域流量">    
-    <input id="drawall" onclick="drawall();" onmouseover="this.style.opacity=0.9;" onmouseout="this.style.opacity=0.6;" type="button" value="显示聚类结果">
-    <input id="clearall" onclick="clearall();" onmouseover="this.style.opacity=0.9;" onmouseout="this.style.opacity=0.6;" type="button" value="清除全部图像">
+    <input id="showChart" onclick="showChart();" onmouseover="this.style.opacity=0.9;" onmouseout="this.style.opacity=0.6;" type="button" value="show district flow">
+    <input id="hideChart" hidden onclick="hideChart();" onmouseover="this.style.opacity=0.9;" onmouseout="this.style.opacity=0.6;" type="button" value="hide district flow">    
+    <input id="drawall" onclick="drawall();" onmouseover="this.style.opacity=0.9;" onmouseout="this.style.opacity=0.6;" type="button" value="show cluster results">
+    <input id="clearall" onclick="clearall();" onmouseover="this.style.opacity=0.9;" onmouseout="this.style.opacity=0.6;" type="button" value="clear all images">
     <div id="eventInfo" hidden>
-        <div id="eventName" style="font-size: 22px; font-weight: bold; font-family: monospace; text-align: center; color: #666">请选择事件</div>
-        <div id="eventDetail" style="position:absolute; top:20%; left:4%; width:285px; height: 180px; font-size: 18px; font-family: monospace; text-align: center; color: #666"></div>
+        <div id="eventName" style="font-size: 15px; font-weight: bold; font-family: monospace; text-align: center; color: #666">Please choose an event</div>
+        <div id="eventDetail" style="position:absolute; top:13%; left:4%; width:285px; height: 180px; font-size: 15px; font-family: monospace; text-align: center; color: #666"></div>
     </div>
     <div id="eventList" hidden>
-        <div style="font-size: 22px; font-weight: bold; font-family: monospace; text-align: center; color: #666">2016年9月社会事件</div>
+        <div style="font-size: 22px; font-weight: bold; font-family: monospace; text-align: center; color: #666">Social Event in Sept., 2016</div>
         <ul id="listDetail" style="list-style-type:circle;position:absolute; top:4%; left:10%;font-size: 18px;"></ul>
     </div>
     <div id="event" onmouseover="$('#eventInfo').show('slow');" onmouseout="$('#eventInfo').hide('slow');" onclick="$('#eventInfo').hide('slow');$('#eventList').show('slow');">i</div>
@@ -149,7 +149,7 @@ map.on('mousemove', function (e){
     //Chart of mouseover block
     $(document).mousemove(function (p) {
         if(showflag){
-            x = p.pageX-30;
+            x = p.pageX;
             y = p.pageY-230;
             if(s != 0){
                 if(x < 1375)
@@ -302,7 +302,7 @@ function areaEvent(area){
     draw([area]);
     for(var k = 0; sort[k] != area; k ++);
     $('#chart').hide();
-    $('#chart').html('<img src="fmri/anomaly_GP'+(k+1)+'.png" width="750px" height="450px">');
+    $('#chart').html('<img src="fmri/anomaly_GP'+(k+1)+'.png" width="500px" height="300px">');
     $('#chart').show();
 }
 
